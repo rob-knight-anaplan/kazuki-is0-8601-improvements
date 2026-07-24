@@ -118,6 +118,8 @@ class DurationFunctions(private val duration: Duration) {
             val totalDuration = time.properties.durationSinceFirstTime.functions.add(duration)
             totalDuration < OneDayDuration
         },
+        post = { time, result ->
+            result.properties.durationSinceFirstTime == time.properties.durationSinceFirstTime.functions.add(duration) }
     )
 
     val add = function(
@@ -213,11 +215,17 @@ object DurationUtilities {
 
 
     val durationInYearUpToStartOfMonth: (Year, Month) -> Duration = function(
-        command = { year, month -> sum(seq(1uL until month) { fromMonth(year, it) }) }
+        command = { year, month -> sum(seq(1uL until month) { fromMonth(year, it) }) },
+        post = { year, month, result ->
+            result == sum(seq(1uL until month) { mk_Duration(daysInMonth(year, it) * HoursPerDay * MinutesPerHour * SecondsPerMinute * MillisPerSecond) })
+        }
     )
 
     val durationFromFirstYearUpToStartOfYear: (Year) -> Duration = function(
-        command = { year -> sum(seq(FirstYear until year) { fromYear(it) }) }
+        command = { year -> sum(seq(FirstYear until year) { fromYear(it) }) },
+        post = { year, result ->
+            result == sum(seq(FirstYear until year) { mk_Duration(daysInYear(it) * HoursPerDay * MinutesPerHour * SecondsPerMinute * MillisPerSecond) })
+        }
     )
 }
 

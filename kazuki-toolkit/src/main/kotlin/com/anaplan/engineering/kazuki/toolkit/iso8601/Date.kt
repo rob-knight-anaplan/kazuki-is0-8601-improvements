@@ -7,6 +7,8 @@ import com.anaplan.engineering.kazuki.toolkit.iso8601.Dtg_Module.mk_Dtg
 import com.anaplan.engineering.kazuki.toolkit.iso8601.Duration_Module.mk_Duration
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import kotlin.text.toLong
+
 
 @Module
 interface Date : PrettyPrintable {
@@ -52,6 +54,8 @@ class DateFunctions(private val date: Date) {
 
     private val localDate by lazy { date.toLocalDate() }
 
+    data class MonthProperties(val count: ULong, val daysInMonth: ULong)
+
     val isEarlierThan = function(
         command = { other: Date -> localDate < other.toLocalDate() },
         post = { other, result ->
@@ -74,15 +78,25 @@ class DateFunctions(private val date: Date) {
     val addMonths = function(
         command = { n: nat -> localDate.plusMonths(n.toLong()).toDate() },
         pre = { n -> (date.year * MonthsPerYear) + date.month + n <= (LastYear * MonthsPerYear) },
-        // TODO -- doesn't hold
-//        post = { n, result -> DateUtilities.monthsBetween(date, result) == n }
+        post = { n, result ->
+            if (result.day < date.day) {
+                DateUtilities.monthsBetween(date, result) == n - 1uL
+            } else {
+                DateUtilities.monthsBetween(date, result) == n
+            }
+        }
     )
 
     val subtractMonths = function(
         command = { n: nat -> localDate.minusMonths(n.toLong()).toDate() },
         pre = { n -> (date.year * MonthsPerYear) + date.month > n },
-        // TODO -- doesn't hold
-//        post = { n, result -> DateUtilities.monthsBetween(result, date) == n }
+        post = { n, result ->
+            if (result.day > date.day) {
+                DateUtilities.monthsBetween(result, date) == n - 1uL
+            } else {
+                DateUtilities.monthsBetween(result, date) == n
+            }
+        }
     )
 
     val addDays: (nat) -> Date = function(

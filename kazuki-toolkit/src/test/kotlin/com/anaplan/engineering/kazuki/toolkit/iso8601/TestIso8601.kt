@@ -1777,6 +1777,11 @@ class TestIso8601 {
             mk_Date(1990u, 11u, 2u).properties.dtgAtStartOfDay,
             mk_Date(1991u, 1u, 2u).properties.dtgAtStartOfDay.functions.subtractMonths(2u)
         )
+        assertEquals(
+            mk_Date(1991u, 1u, 28u),
+            mk_Date(1991u, 2u, 28u).functions.subtractMonths(1u)
+        )
+
     }
 
     @Test
@@ -1791,6 +1796,9 @@ class TestIso8601 {
         assertEquals(
             mk_Date(1990u, 3u, 28u),
             mk_Date(1990u, 1u, 31u).functions.addMonths(1u).functions.addMonths(1u)
+        )
+        assertEquals(
+            mk_Date(1991u, 2u, 28u), mk_Date(1991u, 1u, 30u).functions.addMonths(1u)
         )
         assertEquals(
             mk_Date(1991u, 1u, 30u), mk_Date(1990u, 11u, 30u).functions.addMonths(2u)

@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit
 
 
 @Module
-interface Time: PrettyPrintable {
+interface Time : PrettyPrintable {
     val hour: Hour
     val minute: Minute
     val second: Second
@@ -44,12 +44,12 @@ class TimeProperties(private val time: Time) {
 class TimeFunctions(private val time: Time) {
 
     private val localTime by lazy { time.toLocalTime() }
-    
+
     val isEarlierThan = function(
         command = { other: Time -> localTime < other.toLocalTime() },
         post = { other, result ->
             result iff (time.hour < other.hour || (time.hour == other.hour && (time.minute < other.minute || (time.minute == other.minute && (time.second < other.second || (time.second == other.second && time.millisecond < other.millisecond))))))
-        }
+        },
     )
 }
 
@@ -120,7 +120,7 @@ class TimeInZoneProperties(private val timeInZone: TimeInZone) {
 }
 
 class TimeInZoneFunctions(private val timeInZone: TimeInZone) {
-    
+
 
 }
 
@@ -173,7 +173,7 @@ object TimeUtilities {
 
     val earliest: (Set1<Time>) -> Time = function(
         command = { times -> times.minOf { it.toLocalTime() }.toTime() },
-        post = { times, result -> result in times && forall(times / result) { result.functions.isEarlierThan(it) } }
+        post = { times, result -> result in times && forall(times / result) { result.functions.isEarlierThan(it) } },
     )
 
     val latest: (Set1<Time>) -> Time = function(
@@ -183,7 +183,8 @@ object TimeUtilities {
 }
 
 
+internal fun LocalTime.toTime() =
+    mk_Time(this.hour.toNat(), this.minute.toNat(), this.second.toNat(), (this.nano / 1_000_000).toNat())
 
-internal fun LocalTime.toTime() = mk_Time(this.hour.toNat(), this.minute.toNat(), this.second.toNat(), (this.nano / 1_000_000).toNat())
-
-internal fun Time.toLocalTime() = LocalTime.of(this.hour.toInt(), this.minute.toInt(), this.second.toInt(), this.millisecond.toInt() * 1_000_000)
+internal fun Time.toLocalTime() =
+    LocalTime.of(this.hour.toInt(), this.minute.toInt(), this.second.toInt(), this.millisecond.toInt() * 1_000_000)
